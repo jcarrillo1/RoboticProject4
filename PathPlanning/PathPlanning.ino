@@ -24,7 +24,6 @@
 Adafruit_RGBLCDShield lcd = Adafruit_RGBLCDShield();
 
 Servo RServo, LServo;
-uint8_t buttons;
 
 bool SETUP_DONE = false;
 int SETUP_OPTION = 0;
@@ -37,7 +36,22 @@ int right_encoder_count = 0,
 
 // DIRECTIONS, START AT NONE
 enum DIRECTION_NAMES { NORTH, EAST, SOUTH, WEST, NONE };
+enum MAZE_VALUES { BLANK, CURRENT, UNVISITED, VISITED, WALL };
+
 int current_direction = NONE;
+int maze[9][9] = {
+  { WALL,      WALL,      WALL,      WALL,      WALL,      WALL,      WALL,      WALL, WALL },
+  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
+  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
+  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
+  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
+  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
+  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
+  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
+  { WALL,      WALL,      WALL,      WALL,      WALL,      WALL,      WALL,      WALL, WALL },
+};
+int start_location = 0, end_location = 0, start_direction = 0;
+
 
 // WELP, I THINK THIS IS GONNA HOLD POSITIONS
 bool board[4][4] = { 0 };
@@ -49,6 +63,10 @@ int avg_sensor_front, avg_sensor_right, avg_sensor_left;
 String color = "none";
 bool looking = false;
 
+void printDirection(int inputDirection);
+void setupStartLocation();
+void setupEndLocation();
+void setupStartDirection();
 void setupProgram();
 void readAvgSensorValues();
 
@@ -80,54 +98,120 @@ void setup() {
 }
 
 void loop() {
+  Serial.println("SETTING UP");
   while (!SETUP_DONE) {
+    Serial.println("SETTING UP");
     setupProgram();
   }
 }
 
-enum MAZE_VALUES { BLANK, CURRENT, UNVISITED, VISITED, WALL };
+void printDirection(int input_direction) {
+  switch(input_direction) {
+    case 0:
+      lcd.print("EAST");
+      break;
+    case 1:
+      lcd.print("NORTH");
+      break;
+    case 2:
+      lcd.print("WEST");
+      break;
+    case 3:
+      lcd.print("SOUTH");
+      break;
+    default:
+      lcd.print("ERROR");
+  }
+}
 
-int maze[9][9] = {
-  { WALL,      WALL,      WALL,      WALL,      WALL,      WALL,      WALL,      WALL, WALL },
-  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
-  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
-  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
-  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
-  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
-  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
-  { WALL, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, UNVISITED, WALL },
-  { WALL,      WALL,      WALL,      WALL,      WALL,      WALL,      WALL,      WALL, WALL },
-};
 void setupStartLocation() {
-  uint8_t buttons = lcd.readButtons();
-
+  uint8_t buttons;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Start Location?");
+  lcd.setCursor(0, 1);
+  lcd.print(start_location);
+  while (!(buttons = lcd.readButtons())) {}
   if (buttons) {
     if (buttons & BUTTON_UP) {
-      SETUP_OPTION = (SETUP_OPTION + 3) / 3;
+      start_location = (start_location + 16 + 1) % 16;
     }
     if (buttons & BUTTON_DOWN) {
+      start_location = (start_location + 16 - 1) % 16;
     }
     if (buttons & BUTTON_LEFT) {
-
+      SETUP_OPTION = (SETUP_OPTION + 3 - 1) % 3;
     }
     if (buttons & BUTTON_RIGHT) {
-
+      SETUP_OPTION = (SETUP_OPTION + 3 + 1) % 3;
     }
     if (buttons & BUTTON_SELECT) {
+      SETUP_DONE = true;
+      lcd.clear();
+    }
+  }
 
+}
+
+void setupEndLocation() {
+  uint8_t buttons;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("End Location?");
+  lcd.setCursor(0, 1);
+  lcd.print(end_location);
+  while (!(buttons = lcd.readButtons())) {}
+  if (buttons) {
+    if (buttons & BUTTON_UP) {
+      end_location = (end_location + 16 + 1) % 16;
+    }
+    if (buttons & BUTTON_DOWN) {
+      end_location = (end_location + 16 - 1) % 16;
+    }
+    if (buttons & BUTTON_LEFT) {
+      SETUP_OPTION = (SETUP_OPTION + 3 - 1) % 3;
+    }
+    if (buttons & BUTTON_RIGHT) {
+      SETUP_OPTION = (SETUP_OPTION + 3 + 1) % 3;
+    }
+    if (buttons & BUTTON_SELECT) {
+      SETUP_DONE = true;
+      lcd.clear();
     }
   }
 }
 
-void setupEndLocation() {
-
-}
-
 void setupStartDirection() {
+  uint8_t buttons;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("Start Direction?");
+  lcd.setCursor(0, 1);
+  printDirection(start_direction);
+  while (!(buttons = lcd.readButtons())) {}
+  if (buttons) {
+    if (buttons & BUTTON_UP) {
+      start_direction = (start_direction + 4 + 1) % 4;
+    }
+    if (buttons & BUTTON_DOWN) {
+      start_direction = (start_direction + 4 - 1) % 4;
+    }
+    if (buttons & BUTTON_LEFT) {
+      SETUP_OPTION = (SETUP_OPTION + 3 - 1) % 3;
+    }
+    if (buttons & BUTTON_RIGHT) {
+      SETUP_OPTION = (SETUP_OPTION + 3 + 1) % 3;
+    }
+    if (buttons & BUTTON_SELECT) {
+      SETUP_DONE = true;
+      lcd.clear();
+    }
+  }
 
 }
 
 void setupProgram() {
+  Serial.println(SETUP_OPTION);
   switch(SETUP_OPTION) {
     case 0:
       setupStartLocation();
@@ -137,12 +221,13 @@ void setupProgram() {
       break;
     case 2:
       setupStartDirection();
+      break;
     default:
       lcd.clear();
       lcd.setCursor(0, 0);
       lcd.print("\\/(^.^)\\/");
-      delay(1000);
   }
+  delay(200);
 }
 
 void readAvgSensorValues(int d = 100) {
@@ -178,4 +263,3 @@ void readAvgSensorValues(int d = 100) {
   avg_sensor_right = 500*pow(mdn_right, -0.85);
   avg_sensor_left = 500*pow(mdn_left, -0.85);
 }
-
