@@ -321,38 +321,26 @@ void printGrid() {
 
 bool checkFrontWall() {
   int checked_row = row_position;
-  int checked_col = row_col;
+  int checked_col = col_position;
   switch(current_direction) {
     case NORTH: {
       checked_row = row_position - 1;
-      if (checked_row < 0) {
-//        maze[maze_row_pos-1][maze_col_pos] = WALL;
-        return true;
-      }
+      if (checked_row < 0) return true;
       break;
     }
     case EAST: {
       checked_col = col_position + 1;
-      if (checked_col > 3) {
-//        maze[maze_row_pos][maze_col_pos +1] = WALL;
-        return true;
-      }
+      if (checked_col > 3) return true;
       break;
     }
     case SOUTH: {
       checked_row = row_position + 1;
-      if (check_row > 3){
-//        maze[maze_row_pos+1][maze_col_pos] = WALL;
-        return true;
-      }
+      if (checked_row > 3) return true;
       break;
     }
     case WEST: {
       checked_col = col_position - 1;
-      if (checked_col < 0){
-//        maze[maze_row_pos][maze_col_pos-1] = WALL;
-        return true;
-      }
+      if (checked_col < 0) return true;
       break;
     }
     default: {
