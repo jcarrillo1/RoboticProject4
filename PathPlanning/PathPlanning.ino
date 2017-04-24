@@ -355,85 +355,73 @@ bool checkFrontWall() {
 }
 
 bool checkRightWall() {
+  int checked_row = row_position;
+  int checked_col = col_position;
   switch(current_direction) {
     case WEST: {
-      int row_new = row_position - 1;
-      if (row_new < 0) {
-        maze[maze_row_pos-1][maze_col_pos] = WALL;
-        return true;
-      }
+      checked_row = row_position - 1;
+      if (checked_row < 1) return true;
       break;
     }
     case NORTH: {
-      int col_new = col_position + 1;
-      if (col_new > 3) {
-        maze[maze_row_pos][maze_col_pos+1] = WALL;
-        return true;
-      }
+      checked_col = col_position + 1;
+      if (checked_col > 7) return true;
       break;
     }
     case EAST: {
-      int row_new = row_position + 1;
-      if (row_new > 3){
-        maze[maze_row_pos+1][maze_col_pos] = WALL;
-        return true;
-      }
+      checked_row = row_position + 1;
+      if (checked_row > 7) return true;
       break;
     }
     case SOUTH: {
-      int col_new = col_position - 1;
-      if (col_new < 0){
-        maze[maze_row_pos][maze_col_pos-1] = WALL;
-        return true;
-      }
+      checked_col = col_position - 1;
+      if (checked_col < 1) return true;
       break;
     }
     default: {
       return true;
     }
   }
-  return avg_sensor_right < SENSITIVITY && avg_sensor_right > 0;
+  bool isWall = avg_sensor_front < SENSITIVITY && avg_sensor_front > 0;
+  if (isWall) {
+    maze[checked_row][checked_col] = WALL;
+  }
+  return isWall;
 }
 
 bool checkLeftWall() {
+  int checked_row = row_position;
+  int checked_col = col_position;
   switch(current_direction) {
     case EAST: {
-      int row_new = row_position - 1;
-      if (row_new < 0) {
-        maze[maze_row_pos-1][maze_col_pos] = WALL;
-        return true;
-      }
+      checked_row = row_position - 1;
+      if (checked_row < 1) return true;
       break;
     }
     case SOUTH: {
-      int col_new = col_position + 1;
-      if (col_new > 3) {
-        maze[maze_row_pos][maze_col_pos+1] = WALL;
-        return true;
-      }
+      checked_col = col_position + 1;
+      if (checked_col > 7) return true;
       break;
     }
     case WEST: {
-      int row_new = row_position + 1;
-      if (row_new > 3) {
-        maze[maze_row_pos+1][maze_col_pos] = WALL;
-        return true;
-      }
+      checked_row = row_position + 1;
+      if (checked_row > 7) return true;
       break;
     }
     case NORTH: {
-      int col_new = col_position - 1;
-      if (col_new < 0) {
-        maze[maze_row_pos][maze_col_pos-1] = WALL;
-        return true;
-      }
+      checked_col = col_position - 1;
+      if (checked_col < 1) return true;
       break;
     }
     default: {
       return true;
     }
   }
-  return avg_sensor_left < SENSITIVITY && avg_sensor_left > 0;
+  bool isWall = avg_sensor_front < SENSITIVITY && avg_sensor_front > 0;
+  if (isWall) {
+    maze[checked_row][checked_col] = WALL;
+  }
+  return isWall;
 }
 
 bool checkFrontVisited() {
