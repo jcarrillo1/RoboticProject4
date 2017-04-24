@@ -428,23 +428,23 @@ bool checkFrontVisited() {
   switch(current_direction) {
     case NORTH: {
       int row_new = row_position - 1;
-      if (row_new < 0) return true;
-      return board[row_new][col_position];
+      if (row_new < 1) return true;
+      return maze[row_new][col_position];
     }
     case EAST: {
       int col_new = col_position + 1;
-      if (col_new > 3) return true;
-      return board[row_position][col_new];
+      if (col_new > 7) return true;
+      return maze[row_position][col_new];
     }
     case SOUTH: {
       int row_new = row_position + 1;
-      if (row_new > 3) return true;
-      return board[row_new][col_position];
+      if (row_new > 7) return true;
+      return maze[row_new][col_position];
     }
     case WEST: {
       int col_new = col_position - 1;
-      if (col_new < 0) return true;
-      return board[row_position][col_new];
+      if (col_new < 1) return true;
+      return maze[row_position][col_new];
     }
     default: {
       return true;
@@ -456,23 +456,23 @@ bool checkRightVisited() {
   switch(current_direction) {
     case WEST: {
       int row_new = row_position - 1;
-      if (row_new < 0) return true;
-      return board[row_new][col_position];
+      if (row_new < 1) return true;
+      return maze[row_new][col_position];
     }
     case NORTH: {
       int col_new = col_position + 1;
-      if (col_new > 3) return true;
-      return board[row_position][col_new];
+      if (col_new > 7) return true;
+      return maze[row_position][col_new];
     }
     case EAST: {
       int row_new = row_position + 1;
-      if (row_new > 3) return true;
+      if (row_new > 7) return true;
       return board[row_new][col_position];
     }
     case SOUTH: {
       int col_new = col_position - 1;
-      if (col_new < 0) return true;
-      return board[row_position][col_new];
+      if (col_new < 1) return true;
+      return maze[row_position][col_new];
     }
     default: {
       return true;
@@ -484,23 +484,23 @@ bool checkLeftVisited() {
   switch(current_direction) {
     case EAST: {
       int row_new = row_position - 1;
-      if (row_new < 0) return true;
-      return board[row_new][col_position];
+      if (row_new < 1) return true;
+      return maze[row_new][col_position];
     }
     case SOUTH: {
       int col_new = col_position + 1;
-      if (col_new > 3) return true;
+      if (col_new > 7) return true;
       return board[row_position][col_new];
     }
     case WEST: {
       int row_new = row_position + 1;
-      if (row_new > 3) return true;
-      return board[row_new][col_position];
+      if (row_new > 7) return true;
+      return maze[row_new][col_position];
     }
     case NORTH: {
       int col_new = col_position - 1;
-      if (col_new < 0) return true;
-      return board[row_position][col_new];
+      if (col_new < 1) return true;
+      return maze[row_position][col_new];
     }
     default: {
       return true;
@@ -537,26 +537,26 @@ void encoder() {
 void markBoard() {
   switch(current_direction) {
     case NORTH: {
-      board[row_position - 1][col_position] = VISITED;
+      maze[row_position - 1][col_position] = VISITED;
       row_position -= 2;
       lcd.setBacklight(BLUE);
       break;
     }
     case EAST: {
-      board[row_position][col_position + 1] = VISITED;
+      maze[row_position][col_position + 1] = VISITED;
       col_position += 2;
       lcd.setBacklight(RED);
       break;
 
     }
     case SOUTH: {
-      board[row_position + 1][col_position] = VISITED;
+      maze[row_position + 1][col_position] = VISITED;
       row_position += 2;
       lcd.setBacklight(YELLOW);
       break;
     }
     case WEST: {
-      board[row_position][col_position - 1] = VISITED;
+      maze[row_position][col_position - 1] = VISITED;
       col_position -= 2;
       lcd.setBacklight(GREEN);
       break;
@@ -565,7 +565,7 @@ void markBoard() {
       return;
     }
   }
-  board[row_position][col_position] = VISITED;
+  maze[row_position][col_position] = VISITED;
   looking = false;
 }
 
