@@ -467,7 +467,7 @@ bool checkRightVisited() {
     case EAST: {
       int row_new = row_position + 1;
       if (row_new > 7) return true;
-      return board[row_new][col_position];
+      return maze[row_new][col_position];
     }
     case SOUTH: {
       int col_new = col_position - 1;
@@ -490,7 +490,7 @@ bool checkLeftVisited() {
     case SOUTH: {
       int col_new = col_position + 1;
       if (col_new > 7) return true;
-      return board[row_position][col_new];
+      return maze[row_position][col_new];
     }
     case WEST: {
       int row_new = row_position + 1;
