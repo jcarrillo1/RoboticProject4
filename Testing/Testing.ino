@@ -33,11 +33,11 @@ struct cell {
   int south_cell;
   int west_cell;
   int east_cell;
-}
+};
 
 cell maze[4][4] = {
   {
-    { U, WALL, NO_WALL, NO_WALL, WALL, NO_WALL },
+    { U, WALL, NO_WALL, WALL, NO_WALL },
     { U, WALL, NO_WALL, NO_WALL, NO_WALL },
     { U, WALL, NO_WALL, NO_WALL, NO_WALL },
     { U, WALL, NO_WALL, NO_WALL, WALL }
@@ -57,7 +57,7 @@ cell maze[4][4] = {
     { U, NO_WALL, WALL, NO_WALL, NO_WALL },
     { U, NO_WALL, WALL, NO_WALL, WALL }
   }
-}
+};
 
 void printTestMessage();
 void printErrorMessage();
