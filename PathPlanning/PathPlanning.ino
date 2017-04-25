@@ -90,6 +90,8 @@ cell maze[4][4] = {
 int brushfire_maze[4][4] = { 0 };
 QueueArray<int> queue;
 
+void printMaze();
+void printBrushfire();
 void printErrorMessage();
 void printHelper(String msg, int info);
 void printHelper(String msg, String info);
@@ -123,6 +125,9 @@ void turnRight();
 void runPathPlanning();
 void checkSides(int position);
 void brushfire();
+int findSmallestNeighbor();
+void turnToNeighbor(int dir);
+void runShortestPath();
 
 void setup() {
   pinMode(S0, OUTPUT);
@@ -161,8 +166,30 @@ void loop() {
       runSecondSetup();
       break;
     case SHORTEST_PATH:
+      runShortestPath();
+      break;
     default:
       printErrorMessage();
+  }
+}
+
+void printMaze() {
+  for (unsigned short i = 0; i < 4; i++) {
+    for (unsigned short j = 0; j < 4; j++) {
+      if (maze[i][j].state) Serial.print("X ");
+      else Serial.print("O ");
+    }
+    Serial.println();
+  }
+}
+
+void printBrushfire() {
+  for (unsigned short i = 0; i < 4; i++) {
+    for (unsigned short j = 0; j < 4; j++) {
+      Serial.print(brushfire_maze[i][j]);
+      Serial.print(" ");
+    }
+    Serial.println();
   }
 }
 
@@ -569,7 +596,7 @@ void stop(int x = 100) {
 }
 
 void moveForward() {
-  markBoard();
+  looking_for_color = true;
   setEncoderCounts(145, 0);
   LServo.writeMicroseconds(1525);
   RServo.writeMicroseconds(1476);
@@ -614,21 +641,24 @@ void runPathPlanning() {
   bool wallLeft = checkLeftWall();
   bool wallFront = checkFrontWall();
   bool wallRight = checkRightWall();
+  printMaze();
   if (!wallFront && !checkFrontVisited()) {
-     moveForward();
+    markBoard();
+    moveForward();
   } else if (!wallLeft && !checkLeftVisited()) {
-     turnLeft();
+    turnLeft();
   } else if (!wallRight && !checkRightVisited()) {
-     turnRight();
+    turnRight();
   } else if (!wallFront) {
-     moveForward();
+    markBoard();
+    moveForward();
   } else if (!wallLeft) {
-     turnLeft();
+    turnLeft();
   } else if (!wallRight) {
-     turnRight();
+    turnRight();
   } else {
-     turnLeft();
-     turnLeft();
+    turnLeft();
+    turnLeft();
   }
   getVisitedCount();
 }
@@ -663,11 +693,43 @@ void brushfire() {
     int position = queue.pop();
     checkSides(position);
   }
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
-      Serial.print(brushfire_maze[i][j]);
-      Serial.print(" ");
-    }
-    Serial.println();
+  printBrushfire();
+}
+
+int findSmallestNeighbor() {
+  int target_cost = brushfire_maze[current_row][current_col] - 1;
+  if (current_row != 0 && brushfire_maze[current_row - 1][current_col] == target_cost) {
+    current_row -= 1;
+    return NORTH;
+  }
+  if (current_col != 3 && brushfire_maze[current_row][current_col + 1] == target_cost) {
+    current_col += 1;
+    return EAST;
+  }
+  if (current_row != 3 && brushfire_maze[current_row + 1][current_col] == target_cost) {
+    current_row += 1;
+    return SOUTH;
+  }
+  if (current_col != 0 && brushfire_maze[current_row][current_col - 1] == target_cost) {
+    current_col -= 1;
+    return WEST;
+  }
+  printErrorMessage();
+  return NONE;
+}
+
+void turnToNeighbor(int dir) {
+  while (current_direction != dir) {
+    turnLeft();
+  }
+}
+
+void runShortestPath() {
+  if (current_row != target_row || current_col != target_col) {
+    turnToNeighbor(findSmallestNeighbor());
+    moveForward();
+  } else {
+    printHelper("WEW", "FINISHED");
+    delay(10000);
   }
 }
