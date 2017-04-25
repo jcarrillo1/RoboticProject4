@@ -1,4 +1,0 @@
-Initial Setup
-Setup Done => Setup start values
-Map out initial maze
-Check if finished, stop and await further setup for shortest traversal
