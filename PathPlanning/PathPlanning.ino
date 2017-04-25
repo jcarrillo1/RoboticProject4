@@ -92,6 +92,7 @@ QueueArray<int> queue;
 
 void printMaze();
 void printBrushfire();
+void printMazeDetailed();
 void printErrorMessage();
 void printHelper(String msg, int info);
 void printHelper(String msg, String info);
@@ -104,6 +105,7 @@ void setupStartDirection();
 void setupInitialValues();
 void runInitialSetup();
 void runSecondSetup();
+void readSensorValues();
 void readAvgSensorValues(int d);
 void updateLcdColor();
 void readColors();
@@ -119,6 +121,7 @@ bool checkRightVisited();
 void setEncoderCounts(int target, int initial);
 void updateEncoderCounts();
 void stop(int x);
+void adjustForward();
 void moveForward();
 void turnLeft();
 void turnRight();
@@ -155,6 +158,7 @@ void setup() {
 
 
 void loop() {
+  printMazeDetailed();
   switch(robot_state) {
     case SETUP_ONE:
       runInitialSetup();
@@ -174,23 +178,178 @@ void loop() {
 }
 
 void printMaze() {
-  for (unsigned short i = 0; i < 4; i++) {
-    for (unsigned short j = 0; j < 4; j++) {
-      if (maze[i][j].state) Serial.print("X ");
-      else Serial.print("O ");
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  for (unsigned char i = 0; i < 4; i++) {
+    for (unsigned char j = 0; j < 4; j++) {
+      if (maze[i][j].state) {
+        lcd.print("X");
+      } else {
+        lcd.print("O");
+      }
     }
-    Serial.println();
+  }
+  lcd.setCursor(0, 1);
+  lcd.print("G");
+  unsigned char gridPos = (current_row * 4) + current_col;
+  lcd.print(gridPos);
+  lcd.print(" ");
+  bool frontWall = checkFrontWall();
+  bool leftWall = checkLeftWall();
+  bool rightWall = checkRightWall();
+  switch(current_direction) {
+    case NORTH: {
+      lcd.print("W");
+      if (leftWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("N");
+      if (frontWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("E");
+      if (rightWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("SU");
+      break;
+    }
+    case EAST: {
+      lcd.print("WU ");
+      lcd.print("N");
+      if (leftWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("E");
+      if (frontWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("S");
+      if (rightWall) lcd.print("X");
+      else lcd.print("O");
+      break;
+    }
+    case SOUTH: {
+      lcd.print("W");
+      if (rightWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("NU ");
+      lcd.print("E");
+      if (leftWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("S");
+      if (frontWall) lcd.print("X");
+      else lcd.print("O");
+      break;
+    }
+    case WEST: {
+      lcd.print("W");
+      if (frontWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("N");
+      if (rightWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("EU ");
+      lcd.print("S");
+      if (leftWall) lcd.print("X ");
+      else lcd.print("O ");
+      break;
+    }
+    default: {
+      lcd.print("\\/(o.o)\\/");
+    }
   }
 }
 
 void printBrushfire() {
-  for (unsigned short i = 0; i < 4; i++) {
-    for (unsigned short j = 0; j < 4; j++) {
-      Serial.print(brushfire_maze[i][j]);
-      Serial.print(" ");
+  maze[current_row][current_col].state = V;
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.setCursor(0, 1);
+  lcd.print("G");
+  unsigned char gridPos = (current_row * 4) + current_col;
+  lcd.print(gridPos);
+  lcd.print(" ");
+  bool frontWall = checkFrontWall();
+  bool leftWall = checkLeftWall();
+  bool rightWall = checkRightWall();
+  switch(current_direction) {
+    case NORTH: {
+      lcd.print("W");
+      if (leftWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("N");
+      if (frontWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("E");
+      if (rightWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("SU");
+      break;
     }
-    Serial.println();
+    case EAST: {
+      lcd.print("WU ");
+      lcd.print("N");
+      if (leftWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("E");
+      if (frontWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("S");
+      if (rightWall) lcd.print("X");
+      else lcd.print("O");
+      break;
+    }
+    case SOUTH: {
+      lcd.print("W");
+      if (rightWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("NU ");
+      lcd.print("E");
+      if (leftWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("S");
+      if (frontWall) lcd.print("X");
+      else lcd.print("O");
+      break;
+    }
+    case WEST: {
+      lcd.print("W");
+      if (frontWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("N");
+      if (rightWall) lcd.print("X ");
+      else lcd.print("O ");
+      lcd.print("EU ");
+      lcd.print("S");
+      if (leftWall) lcd.print("X ");
+      else lcd.print("O ");
+      break;
+    }
+    default: {
+      lcd.print("\\/(o.o)\\/");
+    }
   }
+}
+
+void printMazeDetailed() {
+//  Serial.println("BRUSHFIRE");
+//  for (unsigned char i = 0; i < 4; i++) {
+//    for (unsigned char j = 0; j < 4; j++) {
+//      Serial.print(brushfire_maze[i][j]);
+//      Serial.print(" ");
+//    }
+//    Serial.println();
+//  }
+//  Serial.println("WALL STUFF");
+//  for (unsigned char i = 0; i < 4; i++) {
+//    for (unsigned char j = 0; j < 4; j++) {
+//      Serial.print(maze[i][j].north);
+//      Serial.print(" ");
+//      Serial.print(maze[i][j].east);
+//      Serial.print(" ");
+//      Serial.print(maze[i][j].south);
+//      Serial.print(" ");
+//      Serial.print(maze[i][j].west);
+//      Serial.print("\n");
+//    }
+//    Serial.println();
+//  }
 }
 
 void printErrorMessage() {
@@ -306,21 +465,35 @@ void runSecondSetup() {
   if (buttons) {
     if (buttons & BUTTON_SELECT) {
       robot_state = SHORTEST_PATH;
+      for (unsigned char i = 0; i < 4; i++) {
+        for (unsigned char j = 0; j < 4; j++) {
+          maze[i][j].state = U;
+        }
+      }
     }
   }
 }
 
+void getSensorValues() {
+  float front = analogRead(FRONT_SENSOR);
+  float right = analogRead(RIGHT_SENSOR);
+  float left  = analogRead(LEFT_SENSOR);
+  front_distance = 500*pow(front, -0.85);
+  right_distance = 500*pow(right, -0.85);
+  left_distance = 500*pow(left, -0.85);
+}
+
 void readAvgSensorValues(int d = 100) {
   float front[15], right[15], left[15];
-  for(int x = 0; x < 15; x++) {
+  for(unsigned char x = 0; x < 15; x++) {
     front[x] = analogRead(FRONT_SENSOR);
     right[x] = analogRead(RIGHT_SENSOR);
     left[x] = analogRead(LEFT_SENSOR);
     delay(d);
   }
   int tmp;
-  for(int i = 0; i < 15; i++) {
-    for(int j = 0; j < 14; j++) {
+  for(unsigned char i = 0; i < 15; i++) {
+    for(unsigned char j = 0; j < 14; j++) {
       if(front[j] < front[j+1]) {
         tmp = front[j];
         front[j] = front[j+1];
@@ -378,10 +551,10 @@ void readColors() {
 
   int fBlue = pulseIn(SENSOR_OUT, LOW);
 
-  if (looking_for_color && (fRed < 200 || fBlue < 200) && color == "none") {
+  if (looking_for_color && (fRed < 170 || fBlue < 170) && color == "none") {
     color = "lit";
     updateLcdColor();
-  } else if (!(fRed < 200 || fBlue < 200) && color != "none") {
+  } else if (!(fRed < 170 || fBlue < 170) && color != "none") {
     color = "none";
     lcd.setBacklight(WHITE);
   }
@@ -396,8 +569,8 @@ void markBoard() {
 
 void getVisitedCount() {
   int count = 0;
-  for (int i = 0; i < 4; i++) {
-    for (int j = 0; j < 4; j++) {
+  for (unsigned char i = 0; i < 4; i++) {
+    for (unsigned char j = 0; j < 4; j++) {
       if (maze[i][j].state) count += 1;
     }
   }
@@ -595,14 +768,34 @@ void stop(int x = 100) {
   delay(x);
 }
 
+void correctMotion() {
+  getSensorValues();
+  if (left_distance == right_distance) {
+    LServo.writeMicroseconds(1540);
+    RServo.writeMicroseconds(1461);
+  }
+  else if (left_distance < 6 || (right_distance >= 8 && right_distance < SENSOR_SENSITIVITY + 1)) {
+    LServo.writeMicroseconds(1543);
+    RServo.writeMicroseconds(1461);
+  } else if (right_distance < 6 || (left_distance >= 8 && left_distance < SENSOR_SENSITIVITY + 1)) {
+    // add more to right wheel
+    LServo.writeMicroseconds(1540);
+    RServo.writeMicroseconds(1458);
+  } else {
+     LServo.writeMicroseconds(1540);
+     RServo.writeMicroseconds(1461);
+  }
+}
+
 void moveForward() {
   looking_for_color = true;
-  setEncoderCounts(145, 0);
-  LServo.writeMicroseconds(1525);
-  RServo.writeMicroseconds(1476);
+  setEncoderCounts(144, 0);
+  LServo.writeMicroseconds(1540);
+  RServo.writeMicroseconds(1461);
   while(target_encoder_count > right_encoder_count && target_encoder_count > left_encoder_count) {
     readColors();
     updateEncoderCounts();
+    correctMotion();
   }
   stop();
   setEncoderCounts();
@@ -611,9 +804,9 @@ void moveForward() {
 
 void turnLeft() {
   updateDirection(-1);
-  setEncoderCounts(30, 0);
-  LServo.writeMicroseconds(1480);
-  RServo.writeMicroseconds(1480);
+  setEncoderCounts(29, 0);
+  LServo.writeMicroseconds(1460);
+  RServo.writeMicroseconds(1460);
   while(target_encoder_count > right_encoder_count && target_encoder_count > left_encoder_count) {
     updateEncoderCounts();
   }
@@ -624,9 +817,9 @@ void turnLeft() {
 
 void turnRight() {
   updateDirection(1);
-  setEncoderCounts(31, 0);
-  LServo.writeMicroseconds(1520);
-  RServo.writeMicroseconds(1520);
+  setEncoderCounts(29, 0);
+  LServo.writeMicroseconds(1540);
+  RServo.writeMicroseconds(1540);
   while(target_encoder_count > right_encoder_count && target_encoder_count > left_encoder_count) {
     updateEncoderCounts();
   }
@@ -693,24 +886,28 @@ void brushfire() {
     int position = queue.pop();
     checkSides(position);
   }
-  printBrushfire();
 }
 
 int findSmallestNeighbor() {
   int target_cost = brushfire_maze[current_row][current_col] - 1;
-  if (current_row != 0 && brushfire_maze[current_row - 1][current_col] == target_cost) {
+  cell current_cell = maze[current_row][current_col];
+  Serial.print("\nMAZE NORTH: ");
+  Serial.print(maze[current_row][current_col].north);
+  Serial.print("\nTarget cost: ");
+  Serial.print(target_cost);
+  if (current_row != 0 && !maze[current_row][current_col].north && brushfire_maze[current_row - 1][current_col] == target_cost) {
     current_row -= 1;
     return NORTH;
   }
-  if (current_col != 3 && brushfire_maze[current_row][current_col + 1] == target_cost) {
+  if (current_col != 3 && !maze[current_row][current_col].east && brushfire_maze[current_row][current_col + 1] == target_cost) {
     current_col += 1;
     return EAST;
   }
-  if (current_row != 3 && brushfire_maze[current_row + 1][current_col] == target_cost) {
+  if (current_row != 3 && !maze[current_row][current_col].south && brushfire_maze[current_row + 1][current_col] == target_cost) {
     current_row += 1;
     return SOUTH;
   }
-  if (current_col != 0 && brushfire_maze[current_row][current_col - 1] == target_cost) {
+  if (current_col != 0 && !maze[current_row][current_col].west && brushfire_maze[current_row][current_col - 1] == target_cost) {
     current_col -= 1;
     return WEST;
   }
@@ -720,11 +917,13 @@ int findSmallestNeighbor() {
 
 void turnToNeighbor(int dir) {
   while (current_direction != dir) {
-    turnLeft();
+    turnRight();
   }
 }
 
 void runShortestPath() {
+  printBrushfire();
+  delay(1000);
   if (current_row != target_row || current_col != target_col) {
     turnToNeighbor(findSmallestNeighbor());
     moveForward();
