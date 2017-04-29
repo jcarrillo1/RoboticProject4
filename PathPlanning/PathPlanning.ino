@@ -92,7 +92,6 @@ QueueArray<int> queue;
 
 void printMaze();
 void printBrushfire();
-void printMazeDetailed();
 void printErrorMessage();
 void printHelper(String msg, int info);
 void printHelper(String msg, String info);
@@ -158,7 +157,6 @@ void setup() {
 
 
 void loop() {
-  printMazeDetailed();
   switch(robot_state) {
     case SETUP_ONE:
       runInitialSetup();
@@ -327,31 +325,6 @@ void printBrushfire() {
   }
 }
 
-void printMazeDetailed() {
-//  Serial.println("BRUSHFIRE");
-//  for (unsigned char i = 0; i < 4; i++) {
-//    for (unsigned char j = 0; j < 4; j++) {
-//      Serial.print(brushfire_maze[i][j]);
-//      Serial.print(" ");
-//    }
-//    Serial.println();
-//  }
-//  Serial.println("WALL STUFF");
-//  for (unsigned char i = 0; i < 4; i++) {
-//    for (unsigned char j = 0; j < 4; j++) {
-//      Serial.print(maze[i][j].north);
-//      Serial.print(" ");
-//      Serial.print(maze[i][j].east);
-//      Serial.print(" ");
-//      Serial.print(maze[i][j].south);
-//      Serial.print(" ");
-//      Serial.print(maze[i][j].west);
-//      Serial.print("\n");
-//    }
-//    Serial.println();
-//  }
-}
-
 void printErrorMessage() {
   lcd.clear();
   lcd.setCursor(0, 0);
@@ -465,6 +438,9 @@ void runSecondSetup() {
   if (buttons) {
     if (buttons & BUTTON_SELECT) {
       robot_state = SHORTEST_PATH;
+      current_direction = setup_direction;
+      current_row = (setup_start_location / 4);
+      current_col = (setup_start_location % 4);
       for (unsigned char i = 0; i < 4; i++) {
         for (unsigned char j = 0; j < 4; j++) {
           maze[i][j].state = U;
@@ -551,10 +527,10 @@ void readColors() {
 
   int fBlue = pulseIn(SENSOR_OUT, LOW);
 
-  if (looking_for_color && (fRed < 170 || fBlue < 170) && color == "none") {
+  if (looking_for_color && (fRed < 200 || fBlue < 200) && color == "none") {
     color = "lit";
     updateLcdColor();
-  } else if (!(fRed < 170 || fBlue < 170) && color != "none") {
+  } else if (!(fRed < 200 || fBlue < 200) && color != "none") {
     color = "none";
     lcd.setBacklight(WHITE);
   }
@@ -579,11 +555,8 @@ void getVisitedCount() {
     checkFrontWall();
     checkLeftWall();
     checkRightWall();
-    current_direction = setup_direction;
-    current_row = (setup_start_location / 4);
-    current_col = (setup_start_location % 4);
-    robot_state = SETUP_TWO;
     brushfire();
+    robot_state = SETUP_TWO;
   }
 }
 
@@ -891,10 +864,6 @@ void brushfire() {
 int findSmallestNeighbor() {
   int target_cost = brushfire_maze[current_row][current_col] - 1;
   cell current_cell = maze[current_row][current_col];
-  Serial.print("\nMAZE NORTH: ");
-  Serial.print(maze[current_row][current_col].north);
-  Serial.print("\nTarget cost: ");
-  Serial.print(target_cost);
   if (current_row != 0 && !maze[current_row][current_col].north && brushfire_maze[current_row - 1][current_col] == target_cost) {
     current_row -= 1;
     return NORTH;
@@ -922,6 +891,7 @@ void turnToNeighbor(int dir) {
 }
 
 void runShortestPath() {
+  readAvgSensorValues();
   printBrushfire();
   delay(1000);
   if (current_row != target_row || current_col != target_col) {
@@ -932,3 +902,4 @@ void runShortestPath() {
     delay(10000);
   }
 }
+
